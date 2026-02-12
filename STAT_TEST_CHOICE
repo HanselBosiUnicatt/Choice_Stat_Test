@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Selettore test statistico</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: rgba(255,255,255,.06);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.68);
+      --line: rgba(255,255,255,.14);
+      --accent: #7c5cff;
+      --accent2: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --radius: 18px;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      font-synthesis-weight: none;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 10% 0%, rgba(124,92,255,.18), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(34,197,94,.14), transparent 60%),
+        radial-gradient(1200px 800px at 50% 100%, rgba(245,158,11,.10), transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+      padding: 28px 14px 60px;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    header {
+      display: flex; gap: 14px; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .brand h1 { margin: 0; font-size: 22px; letter-spacing: .2px; }
+    .brand p { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.35; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 12px; border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      border-radius: 999px; color: var(--muted); font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 14px;
+    }
+    @media (max-width: 900px){
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .card h2 { margin: 0 0 10px; font-size: 16px; }
+    .card p { margin: 0 0 10px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 560px){ .row { grid-template-columns: 1fr; } }
+
+    label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 6px; }
+    select, input[type="number"], input[type="text"]{
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline: none;
+    }
+    select:focus, input:focus { border-color: rgba(124,92,255,.6); box-shadow: 0 0 0 4px rgba(124,92,255,.14); }
+
+    .section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    button {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.primary { background: rgba(124,92,255,.22); border-color: rgba(124,92,255,.55); }
+    button:hover { filter: brightness(1.08); }
+
+    .result {
+      display: grid;
+      gap: 10px;
+    }
+    .result .box {
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      padding: 14px;
+    }
+    .tag {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .test-name {
+      font-size: 18px;
+      margin: 6px 0 2px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+    .why { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 8px 0 0; }
+    .warn { color: rgba(245,158,11,.95); }
+    .bad { color: rgba(239,68,68,.95); }
+    .ok { color: rgba(34,197,94,.95); }
+
+    .mini {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .list { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+    .list li { margin: 6px 0; }
+    .footer {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    a { color: rgba(124,92,255,.95); }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>Selettore test statistico (tipo “uwufufu”)</h1>
+        <p>Rispondi alle domande e ottieni il test più adatto secondo lo schema del PDF “What statistical test should I do?”. :contentReference[oaicite:1]{index=1}</p>
+      </div>
+      <div class="pill">🧪 decision tree • HTML + JS • GitHub Pages</div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Domande</h2>
+        <p>Compila il minimo indispensabile; le opzioni si adattano in base a ciò che scegli.</p>
+
+        <div class="row">
+          <div>
+            <label for="nVars">Quante variabili stai analizzando?</label>
+            <select id="nVars">
+              <option value="1">1 variabile</option>
+              <option value="2">2 variabili</option>
+              <option value="gt2">&gt; 2 variabili</option>
+            </select>
+          </div>
+          <div>
+            <label for="goal">Qual è l’obiettivo?</label>
+            <select id="goal">
+              <option value="compare">Confrontare gruppi/campioni</option>
+              <option value="association">Associazione / correlazione</option>
+              <option value="model">Modello / regressione</option>
+              <option value="goodness">Proporzione / Goodness-of-fit</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="sec1var" class="section">
+          <div class="row">
+            <div>
+              <label for="varType1">Tipo della variabile (o outcome)</label>
+              <select id="varType1">
+                <option value="quant">Quantitativa</option>
+                <option value="qual">Qualitativa</option>
+              </select>
+              <div class="hint">Esempi: quantitativa = altezza, punteggio; qualitativa = sì/no, categoria.</div>
+            </div>
+            <div id="groupsWrap">
+              <label for="nGroups">Numero di gruppi/campioni da confrontare</label>
+              <select id="nGroups">
+                <option value="2">2</option>
+                <option value="gt2">&gt; 2</option>
+              </select>
+              <div class="hint">Se non stai confrontando gruppi, cambia “Obiettivo”.</div>
+            </div>
+          </div>
+
+          <div id="quantCompare" class="section">
+            <div class="row">
+              <div>
+                <label for="paired">Campioni appaiati / misure ripetute?</label>
+                <select id="paired">
+                  <option value="ind">No, indipendenti</option>
+                  <option value="paired">Sì, appaiati / ripetute</option>
+                </select>
+              </div>
+              <div>
+                <label for="parametric">Assumi test parametrico?</label>
+                <select id="parametric">
+                  <option value="param">Sì (normalità + scala intervallo/rapporto)</option>
+                  <option value="nonparam">No / non sicuro</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="equalVarWrap" class="section">
+              <div class="row">
+                <div>
+                  <label for="equalVar">Varianze uguali tra gruppi? (solo 2 gruppi, indipendenti, parametrico)</label>
+                  <select id="equalVar">
+                    <option value="equal">Sì (assunzione ok)</option>
+                    <option value="unequal">No / non sicuro</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="note">Nota (facoltativa)</label>
+                  <input id="note" type="text" placeholder="es. n piccolo, outlier, ecc." />
+                </div>
+              </div>
+            </div>
+
+            <div id="freqWrap" class="section hidden">
+              <label for="smallExpected">Frequenze attese &lt; 5 in qualche cella? (solo per test su tabelle)</label>
+              <select id="smallExpected">
+                <option value="no">No / ≥ 5</option>
+                <option value="yes">Sì, &lt; 5</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="qualCompare" class="section hidden">
+            <div class="row">
+              <div>
+                <label for="qualPaired">Dati appaiati?</label>
+                <select id="qualPaired">
+                  <option value="ind">No, indipendenti</option>
+                  <option value="paired">Sì, appaiati</option>
+                </select>
+              </div>
+              <div>
+                <label for="qualPairedCount">Se appaiati: quante misure/condizioni?</label>
+                <select id="qualPairedCount">
+                  <option value="2">2 appaiate</option>
+                  <option value="gt2">&gt; 2 appaiate</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="section">
+              <label for="smallExpected2">Per dati indipendenti: frequenze attese &lt; 5?</label>
+              <select id="smallExpected2">
+                <option value="no">No / ≥ 5</option>
+                <option value="yes">Sì, &lt; 5</option>
+              </select>
+              <div class="hint">Usato per decidere tra Chi-quadrato e Fisher (indipendenza).</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="sec2var" class="section hidden">
+          <p class="mini">Per 2 variabili lo schema distingue: (a) entrambe quantitative → correlazione; (b) entrambe qualitative → chi-quadrato/Fisher; (c) una quant + una qual → confronto tra gruppi.</p>
+
+          <div class="row">
+            <div>
+              <label for="varTypeA">Variabile A</label>
+              <select id="varTypeA">
+                <option value="quant">Quantitativa</option>
+                <option value="qual">Qualitativa</option>
+              </select>
+            </div>
+            <div>
+              <label for="varTypeB">Variabile B</label>
+              <select id="varTypeB">
+                <option value="quant">Quantitativa</option>
+                <option value="qual">Qualitativa</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="corrWrap" class="section hidden">
+            <div class="row">
+              <div>
+                <label for="corrParam">Parametrico?</label>
+                <select id="corrParam">
+                  <option value="param">Sì</option>
+                  <option value="nonparam">No / non sicuro</option>
+                </select>
+              </div>
+              <div>
+                <label for="corrNote">Nota (facoltativa)</label>
+                <input id="corrNote" type="text" placeholder="es. relazione monotona, outlier..." />
+              </div>
+            </div>
+          </div>
+
+          <div id="twoQualWrap" class="section hidden">
+            <label for="twoQualGroups">Numero di categorie (gruppi) per ciascuna variabile</label>
+            <select id="twoQualGroups">
+              <option value="2x2">2 gruppi per ciascuna (2x2)</option>
+              <option value="other">&gt;2 per almeno una (RxC)</option>
+            </select>
+            <div class="section">
+              <label for="twoQualSmallExpected">Frequenze attese &lt; 5?</label>
+              <select id="twoQualSmallExpected">
+                <option value="no">No / ≥ 5</option>
+                <option value="yes">Sì, &lt; 5</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="quantQualWrap" class="section hidden">
+            <div class="row">
+              <div>
+                <label for="qqGroups">Numero di gruppi (della variabile qualitativa)</label>
+                <select id="qqGroups">
+                  <option value="2">2</option>
+                  <option value="gt2">&gt; 2</option>
+                </select>
+              </div>
+              <div>
+                <label for="qqPaired">Indipendenti o appaiati?</label>
+                <select id="qqPaired">
+                  <option value="ind">Indipendenti</option>
+                  <option value="paired">Appaiati / ripetute</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row section">
+              <div>
+                <label for="qqParam">Parametrico?</label>
+                <select id="qqParam">
+                  <option value="param">Sì</option>
+                  <option value="nonparam">No / non sicuro</option>
+                </select>
+              </div>
+              <div id="qqEqualVarWrap">
+                <label for="qqEqualVar">Varianze uguali? (solo 2 gruppi, ind, param)</label>
+                <select id="qqEqualVar">
+                  <option value="equal">Sì</option>
+                  <option value="unequal">No / non sicuro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="secGt2" class="section hidden">
+          <p class="mini">Per &gt;2 variabili, lo schema del PDF propone regressioni: lineare multipla (outcome quantitativo) o logistica (outcome qualitativo binario/multinomiale).</p>
+          <div class="row">
+            <div>
+              <label for="outcomeType">Tipo di variabile dipendente (outcome)</label>
+              <select id="outcomeType">
+                <option value="quant">Quantitativa</option>
+                <option value="bin">Qualitativa binaria (0/1)</option>
+                <option value="multi">Qualitativa multinomiale (&gt;2 categorie)</option>
+              </select>
+            </div>
+            <div>
+              <label for="modelNote">Nota (facoltativa)</label>
+              <input id="modelNote" type="text" placeholder="es. covariate, interazioni..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="btnCompute">Suggerisci test</button>
+          <button id="btnReset" type="button">Reset</button>
+        </div>
+
+        <div class="footer">
+          Questo è un aiutino “decisionale” basato sul flowchart nel PDF. Non sostituisce la verifica delle assunzioni (normalità, omoscedasticità, indipendenza, ecc.). :contentReference[oaicite:2]{index=2}
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>Risultato</h2>
+        <div id="result" class="result">
+          <div class="box">
+            <div class="tag">⟵ Compila il form</div>
+            <div class="test-name">Nessun test selezionato</div>
+            <p class="why">Clicca “Suggerisci test” per ottenere una proposta e la motivazione.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // Helpers
+    const $ = (id) => document.getElementById(id);
+
+    function show(el, yes=true){ el.classList.toggle("hidden", !yes); }
+    function setResult({title, tags=[], why="", cautions=[]}){
+      const r = $("result");
+      const tagHtml = tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("");
+      const cautHtml = cautions.length
+        ? `<ul class="list">${cautions.map(c => `<li>${escapeHtml(c)}</li>`).join("")}</ul>`
+        : "";
+      r.innerHTML = `
+        <div class="box">
+          <div>${tagHtml}</div>
+          <div class="test-name">${escapeHtml(title)}</div>
+          <p class="why">${escapeHtml(why)}</p>
+          ${cautHtml}
+        </div>
+      `;
+    }
+
+    function escapeHtml(s){
+      return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    }
+
+    // UI logic
+    function refreshSections(){
+      const nVars = $("nVars").value;
+      const goal = $("goal").value;
+
+      show($("sec1var"), nVars === "1");
+      show($("sec2var"), nVars === "2");
+      show($("secGt2"), nVars === "gt2");
+
+      // 1 variable: show/hide compare fields based on goal
+      const isCompare = goal === "compare";
+      const isGoodness = goal === "goodness";
+
+      show($("groupsWrap"), nVars === "1" && isCompare);
+      show($("quantCompare"), nVars === "1" && $("varType1").value === "quant" && isCompare);
+      show($("qualCompare"), nVars === "1" && $("varType1").value === "qual" && isCompare);
+
+      // Goodness-of-fit / proportion: only meaningful for 1 variable qualitative
+      if(nVars === "1" && isGoodness){
+        show($("groupsWrap"), false);
+        show($("quantCompare"), false);
+        show($("qualCompare"), false);
+      }
+
+      // 2 variables: decide which sub-panel to show
+      if(nVars === "2"){
+        const a = $("varTypeA").value;
+        const b = $("varTypeB").value;
+        const bothQuant = a==="quant" && b==="quant";
+        const bothQual = a==="qual" && b==="qual";
+        const mixed = (a!==b);
+
+        show($("corrWrap"), bothQuant);
+        show($("twoQualWrap"), bothQual);
+        show($("quantQualWrap"), mixed);
+
+        // equal var wrap only for 2 groups + ind + param
+        const qqGroups = $("qqGroups").value;
+        const qqPaired = $("qqPaired").value;
+        const qqParam = $("qqParam").value;
+        show($("qqEqualVarWrap"), qqGroups==="2" && qqPaired==="ind" && qqParam==="param");
+      }
+
+      // 1 variable quantitative compare: equal var only if 2 groups, ind, param
+      const nGroups = $("nGroups").value;
+      const paired = $("paired").value;
+      const param = $("parametric").value;
+      show($("equalVarWrap"), nVars==="1" && $("varType1").value==="quant" && isCompare && nGroups==="2" && paired==="ind" && param==="param");
+    }
+
+    // Decision engine (mapped to the PDF flowchart)
+    function computeTest(){
+      const nVars = $("nVars").value;
+      const goal = $("goal").value;
+
+      // >2 variables -> regression branch
+      if(nVars === "gt2"){
+        const out = $("outcomeType").value;
+        if(out === "quant"){
+          return {
+            title: "Regressione lineare multipla",
+            tags: [">2 variabili", "Outcome quantitativo", "Modello"],
+            why: "Con outcome quantitativo e più predittori, lo schema propone la regressione lineare multipla.",
+            cautions: ["Controlla linearità, omoscedasticità, normalità dei residui, multicollinearità."]
+          };
+        }
+        if(out === "bin"){
+          return {
+            title: "Regressione logistica binaria",
+            tags: [">2 variabili", "Outcome binario", "Modello"],
+            why: "Con outcome qualitativo binario, lo schema propone la logistica binaria.",
+            cautions: ["Valuta separazione, calibrazione, collinearità, campione per parametro."]
+          };
+        }
+        return {
+          title: "Regressione logistica multinomiale",
+          tags: [">2 variabili", "Outcome multinomiale", "Modello"],
+          why: "Con outcome qualitativo a >2 categorie, lo schema propone la logistica multinomiale.",
+          cautions: ["Controlla numerosità per categoria, collinearità, bontà di adattamento."]
+        };
+      }
+
+      // 2 variables
+      if(nVars === "2"){
+        const a = $("varTypeA").value;
+        const b = $("varTypeB").value;
+
+        // both quantitative -> correlation
+        if(a==="quant" && b==="quant"){
+          const corrParam = $("corrParam").value;
+          if(corrParam === "param"){
+            return {
+              title: "Correlazione di Pearson",
+              tags: ["2 variabili quantitative", "Parametrico"],
+              why: "Per due variabili quantitative, lo schema propone Pearson (parametrico).",
+              cautions: ["Attenzione a outlier e non-linearità; valuta anche scatterplot."]
+            };
+          }
+          return {
+            title: "Correlazione di Spearman (rank)",
+            tags: ["2 variabili quantitative", "Non parametrico"],
+            why: "Per due variabili quantitative senza assunzioni parametriche, lo schema propone Spearman.",
+            cautions: ["Misura associazione monotona, non necessariamente lineare."]
+          };
+        }
+
+        // both qualitative -> independence tests
+        if(a==="qual" && b==="qual"){
+          const small = $("twoQualSmallExpected").value;
+          if(small === "yes"){
+            return {
+              title: "Test esatto di Fisher",
+              tags: ["2 variabili qualitative", "Frequenze attese < 5"],
+              why: "Quando le frequenze attese sono piccole, lo schema indica Fisher.",
+              cautions: ["Se tabella non 2x2, considera estensioni/approcci esatti o simulazioni."]
+            };
+          }
+          return {
+            title: "Chi-quadrato di indipendenza",
+            tags: ["2 variabili qualitative", "Frequenze attese ≥ 5"],
+            why: "Per due variabili qualitative con frequenze attese adeguate, lo schema indica il Chi-quadrato di indipendenza.",
+            cautions: ["Verifica l’assunzione sulle frequenze attese."]
+          };
+        }
+
+        // mixed: 1 quant + 1 qual -> compare groups
+        const qqGroups = $("qqGroups").value;
+        const qqPaired = $("qqPaired").value;
+        const qqParam = $("qqParam").value;
+
+        if(qqGroups === "2"){
+          if(qqPaired === "paired"){
+            if(qqParam === "param"){
+              return {
+                title: "t-test per campioni appaiati",
+                tags: ["Quant vs Qual (2 gruppi)", "Appaiati", "Parametrico"],
+                why: "Per 2 gruppi appaiati e parametrico, lo schema propone il t-test appaiato.",
+                cautions: ["Controlla normalità delle differenze e outlier."]
+              };
+            }
+            return {
+              title: "Wilcoxon signed-rank",
+              tags: ["Quant vs Qual (2 gruppi)", "Appaiati", "Non parametrico"],
+              why: "Per 2 gruppi appaiati senza assunzioni parametriche, lo schema propone Wilcoxon signed-rank.",
+              cautions: ["Richiede differenze almeno ordinali e distribuzione circa simmetrica (per interpretazione)."]
+            };
+          } else { // independent
+            if(qqParam === "param"){
+              const eq = $("qqEqualVar").value;
+              if(eq === "equal"){
+                return {
+                  title: "t-test per 2 campioni indipendenti (Student)",
+                  tags: ["Quant vs Qual (2 gruppi)", "Indipendenti", "Parametrico", "Varianze uguali"],
+                  why: "Per 2 gruppi indipendenti e parametrico con varianze uguali, lo schema propone t-test di Student.",
+                  cautions: ["Verifica omoscedasticità e normalità (o robustezza con n adeguato)."]
+                };
+              }
+              return {
+                title: "t-test di Welch per 2 campioni indipendenti",
+                tags: ["Quant vs Qual (2 gruppi)", "Indipendenti", "Parametrico", "Varianze non uguali"],
+                why: "Per 2 gruppi indipendenti e parametrico con varianze non uguali, lo schema propone Welch.",
+                cautions: ["Spesso è una scelta robusta anche quando non sei sicuro sulle varianze."]
+              };
+            }
+            return {
+              title: "Mann–Whitney U",
+              tags: ["Quant vs Qual (2 gruppi)", "Indipendenti", "Non parametrico"],
+              why: "Per 2 gruppi indipendenti senza assunzioni parametriche, lo schema propone Mann–Whitney U.",
+              cautions: ["Interpretabile come differenza di distribuzione/posizione; attenzione a forme diverse."]
+            };
+          }
+        }
+
+        // >2 groups
+        if(qqPaired === "paired"){
+          if(qqParam === "param"){
+            return {
+              title: "ANOVA a misure ripetute",
+              tags: ["Quant vs Qual (>2 gruppi)", "Ripetute", "Parametrico"],
+              why: "Per >2 condizioni appaiate con outcome quantitativo parametrico, lo schema propone repeated measures ANOVA.",
+              cautions: ["Controlla sfericità (es. Mauchly) o usa correzioni (Greenhouse–Geisser)."]
+            };
+          }
+          return {
+            title: "Test di Friedman",
+            tags: ["Quant vs Qual (>2 gruppi)", "Ripetute", "Non parametrico"],
+            why: "Per >2 condizioni appaiate senza assunzioni parametriche, lo schema propone Friedman.",
+            cautions: ["Per confronti post-hoc servono correzioni per multipli confronti."]
+          };
+        } else { // independent
+          if(qqParam === "param"){
+            // Nel flowchart: One-way ANOVA (varianze uguali) o Welch ANOVA (varianze diverse)
+            // Qui non chiediamo varianze per >2 (potremmo aggiungerlo), intanto proponiamo due opzioni.
+            return {
+              title: "One-way ANOVA (o Welch ANOVA se varianze diverse)",
+              tags: ["Quant vs Qual (>2 gruppi)", "Indipendenti", "Parametrico"],
+              why: "Per >2 gruppi indipendenti e parametrico, lo schema propone One-way ANOVA; se varianze non uguali, Welch ANOVA.",
+              cautions: ["Verifica omoscedasticità (es. Levene) e scegli Welch se serve; usa post-hoc appropriati."]
+            };
+          }
+          return {
+            title: "Kruskal–Wallis",
+            tags: ["Quant vs Qual (>2 gruppi)", "Indipendenti", "Non parametrico"],
+            why: "Per >2 gruppi indipendenti senza assunzioni parametriche, lo schema propone Kruskal–Wallis.",
+            cautions: ["Per post-hoc servono test a coppie con correzione."]
+          };
+        }
+      }
+
+      // 1 variable
+      if(nVars === "1"){
+        const varType = $("varType1").value;
+
+        // goodness / proportion
+        if(goal === "goodness"){
+          if(varType === "qual"){
+            // Flowchart: One-proportion test (2 groups?) and Chi-square goodness-of-fit (>2)
+            // Interpretiamo come: 2 categorie -> one-proportion, >2 categorie -> GOF
+            const cats = $("nGroups").value; // riuso come "categorie" quando goal=goodness
+            if(cats === "2"){
+              return {
+                title: "Test su una proporzione (one-proportion test)",
+                tags: ["1 variabile qualitativa", "Proporzione"],
+                why: "Con una variabile qualitativa binaria e un valore atteso di proporzione, lo schema propone il test su una proporzione.",
+                cautions: ["Scegli versione z o esatta binomiale a seconda di n e p attesa."]
+              };
+            }
+            return {
+              title: "Chi-quadrato goodness-of-fit",
+              tags: ["1 variabile qualitativa", "Goodness-of-fit"],
+              why: "Con una variabile qualitativa con >2 categorie, lo schema propone il Chi-quadrato goodness-of-fit.",
+              cautions: ["Verifica frequenze attese sufficienti per categoria."]
+            };
+          }
+          return {
+            title: "Obiettivo non coerente",
+            tags: ["Controllo input"],
+            why: "Proporzione / goodness-of-fit nello schema si applica a variabili qualitative. Cambia tipo variabile o obiettivo.",
+            cautions: ["Se hai outcome quantitativo, scegli 'Confrontare gruppi' o 'Modello'."]
+          };
+        }
+
+        // compare groups
+        if(goal === "compare"){
+          const nGroups = $("nGroups").value;
+
+          if(varType === "qual"){
+            // Flowchart: 2 paired -> McNemar; >2 paired -> Cochran Q; independent -> Fisher or Chi-square independence
+            const qPaired = $("qualPaired").value;
+            if(qPaired === "paired"){
+              const k = $("qualPairedCount").value;
+              if(k === "2"){
+                return {
+                  title: "Test di McNemar",
+                  tags: ["Qualitativa", "2 appaiate"],
+                  why: "Per 2 misure appaiate su variabile binaria, lo schema propone McNemar.",
+                  cautions: ["Serve struttura appaiata (stessi soggetti in 2 condizioni)."]
+                };
+              }
+              return {
+                title: "Test Q di Cochran",
+                tags: ["Qualitativa", ">2 appaiate"],
+                why: "Per >2 misure appaiate su outcome binario, lo schema propone Cochran’s Q.",
+                cautions: ["Per post-hoc: confronti McNemar con correzione."]
+              };
+            } else {
+              const small = $("smallExpected2").value;
+              if(small === "yes"){
+                return {
+                  title: "Test esatto di Fisher (indipendenza)",
+                  tags: ["Qualitativa", "Indipendenti", "Attese < 5"],
+                  why: "Per tabelle con frequenze attese piccole, lo schema propone Fisher.",
+                  cautions: ["Se tabella grande, valutare alternative esatte o simulazioni."]
+                };
+              }
+              return {
+                title: "Chi-quadrato di indipendenza",
+                tags: ["Qualitativa", "Indipendenti", "Attese ≥ 5"],
+                why: "Per confronti tra gruppi indipendenti su variabile qualitativa, lo schema indica Chi-quadrato di indipendenza.",
+                cautions: ["Verifica frequenze attese."]
+              };
+            }
+          }
+
+          // quantitative compare: 2 vs >2, ind vs paired, param vs nonparam, and equal/unequal for 2 ind param
+          const paired = $("paired").value;
+          const param = $("parametric").value;
+
+          if(nGroups === "2"){
+            if(paired === "paired"){
+              if(param === "param"){
+                return {
+                  title: "t-test per campioni appaiati",
+                  tags: ["Quantitativa", "2 gruppi", "Appaiati", "Parametrico"],
+                  why: "Per 2 campioni appaiati e parametrico, lo schema propone il t-test appaiato.",
+                  cautions: ["Controlla normalità delle differenze."]
+                };
+              }
+              return {
+                title: "Wilcoxon signed-rank",
+                tags: ["Quantitativa", "2 gruppi", "Appaiati", "Non parametrico"],
+                why: "Per 2 campioni appaiati non parametrico, lo schema propone Wilcoxon signed-rank.",
+                cautions: ["Robusto a non-normalità; attenzione a tanti zeri/pareggi."]
+              };
+            } else { // independent
+              if(param === "param"){
+                const eq = $("equalVar").value;
+                if(eq === "equal"){
+                  return {
+                    title: "t-test per 2 campioni indipendenti (Student)",
+                    tags: ["Quantitativa", "2 gruppi", "Indipendenti", "Parametrico", "Varianze uguali"],
+                    why: "Per 2 campioni indipendenti parametrico con varianze uguali, lo schema propone Student.",
+                    cautions: ["Se varianze diverse usa Welch."]
+                  };
+                }
+                return {
+                  title: "t-test di Welch per 2 campioni indipendenti",
+                  tags: ["Quantitativa", "2 gruppi", "Indipendenti", "Parametrico", "Varianze non uguali"],
+                  why: "Per 2 campioni indipendenti parametrico con varianze non uguali, lo schema propone Welch.",
+                  cautions: ["Buona scelta default se non sei sicuro sull’omoscedasticità."]
+                };
+              }
+              return {
+                title: "Mann–Whitney U",
+                tags: ["Quantitativa", "2 gruppi", "Indipendenti", "Non parametrico"],
+                why: "Per 2 campioni indipendenti non parametrico, lo schema propone Mann–Whitney U.",
+                cautions: ["Non confronta solo medie: confronta distribuzioni/posizione."]
+              };
+            }
+          }
+
+          // >2 groups
+          if(paired === "paired"){
+            if(param === "param"){
+              return {
+                title: "ANOVA a misure ripetute",
+                tags: ["Quantitativa", ">2 gruppi", "Ripetute", "Parametrico"],
+                why: "Per >2 campioni appaiati parametrico, lo schema propone repeated measures ANOVA.",
+                cautions: ["Verifica sfericità o usa correzioni; post-hoc con correzione."]
+              };
+            }
+            return {
+              title: "Test di Friedman",
+              tags: ["Quantitativa", ">2 gruppi", "Ripetute", "Non parametrico"],
+              why: "Per >2 campioni appaiati non parametrico, lo schema propone Friedman.",
+              cautions: ["Post-hoc necessari per capire quali coppie differiscono."]
+            };
+          } else { // independent
+            if(param === "param"){
+              return {
+                title: "One-way ANOVA (o Welch ANOVA se varianze diverse)",
+                tags: ["Quantitativa", ">2 gruppi", "Indipendenti", "Parametrico"],
+                why: "Per >2 campioni indipendenti parametrico, lo schema propone One-way ANOVA; se varianze non uguali, Welch ANOVA.",
+                cautions: ["Valuta omoscedasticità e scegli Welch se serve; post-hoc (Tukey/Games-Howell)."]
+              };
+            }
+            return {
+              title: "Kruskal–Wallis",
+              tags: ["Quantitativa", ">2 gruppi", "Indipendenti", "Non parametrico"],
+              why: "Per >2 campioni indipendenti non parametrico, lo schema propone Kruskal–Wallis.",
+              cautions: ["Per confronti multipli usa test a coppie con correzione (es. Dunn)."]
+            };
+          }
+        }
+
+        // other goals for 1 variable (association/model) not covered by this flowchart
+        return {
+          title: "Percorso non coperto",
+          tags: ["Controllo input"],
+          why: "Per 1 variabile, lo schema del PDF copre principalmente proporzioni/goodness-of-fit e confronti tra gruppi. Prova a cambiare obiettivo o usa 2 variabili / modello.",
+          cautions: ["Se vuoi un test specifico (es. test di normalità, varianze, ecc.) possiamo aggiungerlo."]
+        };
+      }
+
+      return {
+        title: "Impossibile determinare",
+        tags: ["Errore"],
+        why: "C’è una combinazione non gestita: prova a ricontrollare le scelte.",
+        cautions: []
+      };
+    }
+
+    // Wire events
+    const idsToWatch = [
+      "nVars","goal","varType1","nGroups","paired","parametric","equalVar",
+      "qualPaired","qualPairedCount","smallExpected2",
+      "varTypeA","varTypeB","corrParam","twoQualGroups","twoQualSmallExpected",
+      "qqGroups","qqPaired","qqParam","qqEqualVar",
+      "outcomeType"
+    ];
+    idsToWatch.forEach(id => $(id).addEventListener("change", refreshSections));
+
+    $("btnCompute").addEventListener("click", (e) => {
+      e.preventDefault();
+      refreshSections();
+      const res = computeTest();
+      setResult(res);
+    });
+
+    $("btnReset").addEventListener("click", () => {
+      document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+      document.querySelectorAll("input").forEach(i => i.value = "");
+      refreshSections();
+      setResult({
+        title: "Nessun test selezionato",
+        tags: ["⟵ Compila il form"],
+        why: "Clicca “Suggerisci test” per ottenere una proposta e la motivazione.",
+        cautions: []
+      });
+    });
+
+    // Init
+    refreshSections();
+  </script>
+</body>
+</html>
